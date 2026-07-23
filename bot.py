@@ -13,7 +13,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "emails.db"
+DB_PATH = Path(os.environ.get("DATABASE_PATH", BASE_DIR / "emails.db"))
 GET_EMAIL_TEXT = "📧 Получить почту"
 
 
@@ -39,6 +39,7 @@ ACCESS_PASSWORD = get_access_password()
 
 
 def connect() -> sqlite3.Connection:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection
