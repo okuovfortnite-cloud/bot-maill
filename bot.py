@@ -201,7 +201,7 @@ def main() -> None:
     app.add_handler(MessageHandler(filters.Document.ALL, upload_list))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(f"^{re.escape(GET_EMAIL_TEXT)}$"), give_email))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_password))
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    app.run_polling(allowed_updates=Update.ALL_TYPES) 
 
 
 if __name__ == "__main__":
