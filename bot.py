@@ -15,7 +15,6 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "emails.db"
 GET_EMAIL_TEXT = "📧 Получить почту"
-EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 
 def get_admin_ids() -> set[int]:
@@ -137,7 +136,7 @@ async def give_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     if email is None:
         await update.message.reply_text("Свободные почты закончились. Попробуйте позже.")
         return
-    await update.message.reply_text(f"Ваша почта:\n<code>{email}</code>", parse_mode="HTML")
+    await update.message.reply_text(f"Ваши данные:\n<code>{email}</code>", parse_mode="HTML")
 
 
 async def upload_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -152,24 +151,20 @@ async def upload_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     file = await document.get_file()
     content = (await file.download_as_bytearray()).decode("utf-8-sig", errors="replace")
-    emails = []
-    invalid = 0
+    entries = []
     for line in content.splitlines():
-        email = line.strip().lower()
-        if not email:
+        entry = line.strip()
+        if not entry:
             continue
-        if EMAIL_RE.fullmatch(email):
-            emails.append(email)
-        else:
-            invalid += 1
+        entries.append(entry)
 
-    if not emails:
-        await update.message.reply_text("В файле не найдено корректных email-адресов.")
+    if not entries:
+        await update.message.reply_text("В файле не найдено непустых строк.")
         return
 
-    added, duplicates = await asyncio.to_thread(add_emails, emails)
+    added, duplicates = await asyncio.to_thread(add_emails, entries)
     await update.message.reply_text(
-        f"Готово. Добавлено: {added}. Уже были в базе: {duplicates}. Некорректных строк: {invalid}.\n"
+        f"Готово. Добавлено: {added}. Уже были в базе: {duplicates}.\n"
         f"Свободно сейчас: {await asyncio.to_thread(remaining_count)}."
     )
 
